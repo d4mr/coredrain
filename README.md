@@ -1,6 +1,17 @@
 # Coredrain
-
 A service that correlates HyperCore spot transfers with their HyperEVM transaction hashes.
+
+
+![Coredrain Explorer](https://github.com/user-attachments/assets/12077e09-b2e0-48f8-bee1-ebe8191516b6)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6fa4066e-3f0d-4e32-8198-652dc0d5d5b9" width="49%" alt="Grafana Dashboard" />
+  <img src="https://github.com/user-attachments/assets/c795a2a9-31d5-4136-8cbd-59f6fb33119a" width="49%" alt="Explorer" />
+</p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3d97a07c-9d60-450f-b70a-54d3a93b4bcd" width="49%" alt="Explorer Populating" />
+  <img src="https://github.com/user-attachments/assets/07426e65-ae61-4090-a000-41275187afc7" width="49%" alt="API Reference" />
+</p>
+
 
 ## The Problem
 
@@ -472,6 +483,7 @@ This starts:
 | **Prometheus**   | http://localhost:9090                                 | Metrics backend                                      |
 | **API**          | http://localhost:9465                                 | REST API                                             |
 | **Metrics**      | http://localhost:9464/metrics                         | Prometheus scrape endpoint                           |
+
 
 ### Environment Variables
 
