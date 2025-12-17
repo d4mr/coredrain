@@ -368,27 +368,33 @@ export const insertTransfersBatch = (
         const result = await TransferModel.insertMany(docs, { ordered: false });
         return { inserted: result.length, duplicates: 0 };
       } catch (error: unknown) {
-        // With ordered:false, MongoDB throws BulkWriteError but still inserts non-duplicates
+        // With ordered:false, MongoDB throws MongoBulkWriteError but still inserts non-duplicates
+        // Structure: { insertedCount, writeErrors: [{ err: { code, errmsg } }] }
         const bulkError = error as {
-          insertedDocs?: unknown[];
-          writeErrors?: Array<{ code: number }>;
+          code?: number;
+          insertedCount?: number;
+          writeErrors?: Array<{ err?: { code: number } }>;
         };
 
-        // Count successful inserts from the error object
-        const insertedCount = bulkError.insertedDocs?.length ?? 0;
-        const duplicateCount =
-          bulkError.writeErrors?.filter((e) => e.code === 11000).length ?? 0;
-
-        // If all errors are duplicates, that's fine — return the counts
-        if (
-          bulkError.writeErrors &&
-          bulkError.writeErrors.every((e) => e.code === 11000)
-        ) {
-          return { inserted: insertedCount, duplicates: duplicateCount };
+        // Check if this is a duplicate key error (code 11000)
+        if (bulkError.code !== 11000) {
+          throw error;
         }
 
-        // Non-duplicate error, re-throw
-        throw error;
+        const insertedCount = bulkError.insertedCount ?? 0;
+        const writeErrors = bulkError.writeErrors ?? [];
+        
+        // Check if all write errors are duplicate key errors
+        // Note: writeErrors[i].err.code, not writeErrors[i].code
+        const allDuplicates = writeErrors.every((e) => e.err?.code === 11000);
+        
+        if (!allDuplicates) {
+          // Has non-duplicate errors, re-throw
+          throw error;
+        }
+
+        const duplicateCount = writeErrors.length;
+        return { inserted: insertedCount, duplicates: duplicateCount };
       }
     },
     catch: (error: unknown) =>
