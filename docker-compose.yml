@@ -70,6 +70,10 @@ services:
       - METRICS_PORT=9464
       - API_PORT=9465
       - LOG_LEVEL=info
+      # AWS credentials for S3 block fetching (required for fast backfill)
+      # Without these, the app will fail to start. Get credentials from AWS console.
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
     labels:
       - dev.orbstack.http-port=9465
     depends_on:
