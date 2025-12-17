@@ -50,7 +50,7 @@ export function Header() {
           {/* Links */}
           <div className="hidden md:flex items-center gap-4">
             <a
-              href="https://github.com/your-repo/coredrain"
+              href="https://github.com/d4mr/coredrain"
               target="_blank"
               rel="noopener noreferrer"
               className="text-text-tertiary hover:text-text-primary transition-colors"

@@ -38,7 +38,7 @@ The correlation is based on matching:
 
 ## Why Not Just Index the Full Chain?
 
-Good question. There are simpler approaches we considered:
+Good question. There are simpler approaches I considered:
 
 ### Option A: Full Chain Index
 Index every single HyperEVM block and transaction, then query by (recipient, amount, time).
