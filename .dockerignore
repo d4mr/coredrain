@@ -1,0 +1,13 @@
+node_modules
+ui
+.git
+.gitignore
+*.md
+.cursor
+grafana
+prometheus.yml
+docker-compose.yml
+Dockerfile
+.dockerignore
+*.test.ts
+test.json

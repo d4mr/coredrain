@@ -1,0 +1,100 @@
+services:
+  # MongoDB for storing transfers and checkpoints
+  mongodb:
+    image: mongo:7
+    container_name: coredrain-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "none"
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: coredrain-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--log.level=warn'
+    depends_on:
+      - app
+    logging:
+      driver: "none"
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: coredrain-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_LOG_LEVEL=warn
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    logging:
+      driver: "none"
+
+  # Coredrain application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coredrain-app
+    ports:
+      - "9464:9464"  # Metrics endpoint
+      - "9465:9465"  # API endpoint
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/coredrain
+      - METRICS_PORT=9464
+      - API_PORT=9465
+      - LOG_LEVEL=info
+    labels:
+      - dev.orbstack.http-port=9465
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: "no"
+
+  # UI (Vite dev server with hot reload)
+  ui:
+    image: oven/bun:1
+    container_name: coredrain-ui
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./ui:/app
+      - ui_node_modules:/app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:9465
+    command: ["sh", "-c", "bun install && bun run dev --host"]
+    depends_on:
+      - app
+
+volumes:
+  mongodb_data:
+  prometheus_data:
+  grafana_data:
+  ui_node_modules:
