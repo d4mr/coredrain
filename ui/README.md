@@ -1,5 +1,8 @@
 # Coredrain Explorer UI
 
+> [!WARNING]
+> **AI GENERATED** The entire UI is completely AI generated. Only for demonstration purposes.
+
 A Hyperliquid-styled dashboard for exploring HyperCore to HyperEVM transfer correlations.
 
 ## Features

@@ -66,10 +66,10 @@ If we need instant correlation for historical transfers, we'd need to pre-index 
 
 Hyperliquid provides an S3 bucket (`hl-mainnet-evm-blocks`) with all historical EVM block data. We use two strategies:
 
-| Strategy | Speed | Cost | Use Case |
-|----------|-------|------|----------|
-| **RPC** | ~2 blocks/sec | Free | Live matching (steady state) |
-| **S3** | ~370 blocks/sec | AWS data transfer | Backfill (catching up) |
+| Strategy | Speed           | Cost              | Use Case                     |
+| -------- | --------------- | ----------------- | ---------------------------- |
+| **RPC**  | ~2 blocks/sec   | Free              | Live matching (steady state) |
+| **S3**   | ~370 blocks/sec | AWS data transfer | Backfill (catching up)       |
 
 The service automatically switches between them:
 - If there are >10 pending transfers, use S3 (fast bulk processing)
@@ -266,10 +266,10 @@ For simpler scripts or CRUD apps? A minimal Either implementation is probably th
 
 When tokens bridge from HyperCore to HyperEVM, they go through special system addresses:
 
-| Token | System Address | Transfer Type |
-|-------|---------------|---------------|
-| HYPE (native) | `0x2222222222222222222222222222222222222222` | Native ETH transfer (`msg.value`) |
-| Spot tokens | `0x2000000000000000000000000000000000000{index}` | ERC20 `transfer()` call |
+| Token         | System Address                                   | Transfer Type                     |
+| ------------- | ------------------------------------------------ | --------------------------------- |
+| HYPE (native) | `0x2222222222222222222222222222222222222222`     | Native ETH transfer (`msg.value`) |
+| Spot tokens   | `0x2000000000000000000000000000000000000{index}` | ERC20 `transfer()` call           |
 
 The index is a hex suffix. For example, token index 222 (0xDE in hex) becomes `0x20000000000000000000000000000000000000de`.
 
@@ -284,11 +284,11 @@ HYPE is always 18 decimals. Spot tokens vary - USDC is 6, some tokens use 18. We
 
 ## MongoDB Collections
 
-| Collection | Purpose |
-|------------|---------|
-| `transfers` | Indexed transfers with matching status |
-| `watched_addresses` | Address list with per-address cursors |
-| `system_txs` | Cached EVM system transactions (also used as anchor points for timestamp interpolation) |
+| Collection          | Purpose                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `transfers`         | Indexed transfers with matching status                                                  |
+| `watched_addresses` | Address list with per-address cursors                                                   |
+| `system_txs`        | Cached EVM system transactions (also used as anchor points for timestamp interpolation) |
 
 The `transfers` and `system_txs` collections are intentionally separate. Transfers represent "things we care about" from HyperCore (watched addresses). SystemTransactions are a cache of ALL system txs we've seen on HyperEVM during searches. A single block might have 10 system txs but we only need 1 for our transfer. The other 9 still get cached for future searches and provide anchor points for block estimation.
 
@@ -390,14 +390,14 @@ GET /health
 
 Prometheus metrics on port 9464:
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `coredrain_transfers_processed_total` | Counter | Processed transfers by status and strategy |
-| `coredrain_transfers_pending` | Gauge | Current pending count |
-| `coredrain_match_duration_seconds` | Histogram | Time to match a transfer |
-| `coredrain_match_rounds` | Histogram | Search rounds per match |
-| `coredrain_match_blocks_searched` | Histogram | Blocks fetched per match |
-| `coredrain_block_fetch_duration_seconds` | Histogram | Block fetch latency by strategy |
+| Metric                                   | Type      | Description                                |
+| ---------------------------------------- | --------- | ------------------------------------------ |
+| `coredrain_transfers_processed_total`    | Counter   | Processed transfers by status and strategy |
+| `coredrain_transfers_pending`            | Gauge     | Current pending count                      |
+| `coredrain_match_duration_seconds`       | Histogram | Time to match a transfer                   |
+| `coredrain_match_rounds`                 | Histogram | Search rounds per match                    |
+| `coredrain_match_blocks_searched`        | Histogram | Blocks fetched per match                   |
+| `coredrain_block_fetch_duration_seconds` | Histogram | Block fetch latency by strategy            |
 
 ## Running
 
@@ -405,7 +405,35 @@ Prometheus metrics on port 9464:
 
 - [Bun](https://bun.sh/) runtime
 - MongoDB 6+
-- AWS credentials (for S3 backfill - optional but recommended)
+- AWS credentials (for S3 block fetching)
+
+### Quick Start
+
+```bash
+# 1. Install dependencies
+bun install
+
+# 2. Set up environment (copy and edit with your AWS credentials)
+cp .env.example .env
+
+# 3. Start MongoDB (if not running)
+docker run -d -p 27017:27017 mongo:7
+
+# 4. Run the service
+bun run src/main.ts
+```
+
+### AWS Credentials
+
+S3 credentials are **required** for block fetching. The service uses Hyperliquid's public S3 bucket (`hl-mainnet-evm-blocks`) which is "requester pays", meaning you need valid AWS credentials (any AWS account works, you just pay for data transfer).
+
+To get credentials:
+1. Create an AWS account (or use existing)
+2. Go to IAM → Users → Create user
+3. Create access key for programmatic access
+4. Add to `.env` file or pass via environment
+
+Without S3, the service cannot fetch historical block data and will fail to start.
 
 ### Development
 
@@ -420,6 +448,10 @@ LOG_LEVEL=debug bun run src/main.ts
 ### Docker
 
 ```bash
+# Set S3 credentials in environment first
+export S3_ACCESS_KEY_ID=your_key
+export S3_SECRET_ACCESS_KEY=your_secret
+
 docker-compose up
 ```
 
@@ -431,26 +463,26 @@ This starts:
 
 ### Local URLs
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **UI** | http://localhost:5173 | Web interface for browsing transfers |
-| **API Docs** | http://localhost:9465/docs | Scalar OpenAPI reference UI |
-| **OpenAPI Spec** | http://localhost:9465/openapi.json | Raw OpenAPI JSON |
-| **Grafana** | http://localhost:3000/d/coredrain-dashboard/coredrain | Metrics dashboard |
-| **Prometheus** | http://localhost:9090 | Metrics backend |
-| **API** | http://localhost:9465 | REST API |
-| **Metrics** | http://localhost:9464/metrics | Prometheus scrape endpoint |
+| Service          | URL                                                   | Description                                          |
+| ---------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| **UI**           | http://localhost:5173                                 | Web interface for browsing transfers. (AI GENERATED) |
+| **API Docs**     | http://localhost:9465/docs                            | Scalar OpenAPI reference UI                          |
+| **OpenAPI Spec** | http://localhost:9465/openapi.json                    | Raw OpenAPI JSON                                     |
+| **Grafana**      | http://localhost:3000/d/coredrain-dashboard/coredrain | Metrics dashboard                                    |
+| **Prometheus**   | http://localhost:9090                                 | Metrics backend                                      |
+| **API**          | http://localhost:9465                                 | REST API                                             |
+| **Metrics**      | http://localhost:9464/metrics                         | Prometheus scrape endpoint                           |
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MONGODB_URL` | `mongodb://127.0.0.1:27017/coredrain` | MongoDB connection |
-| `LOG_LEVEL` | `warn` | debug/info/warn/error |
-| `METRICS_PORT` | `9464` | Prometheus metrics port |
-| `API_PORT` | `9465` | HTTP API port |
-| `S3_ACCESS_KEY_ID` | (none) | AWS credentials for Hyperliquid bucket |
-| `S3_SECRET_ACCESS_KEY` | (none) | AWS credentials for Hyperliquid bucket |
+| Variable               | Default                               | Description                            |
+| ---------------------- | ------------------------------------- | -------------------------------------- |
+| `MONGODB_URL`          | `mongodb://127.0.0.1:27017/coredrain` | MongoDB connection                     |
+| `LOG_LEVEL`            | `warn`                                | debug/info/warn/error                  |
+| `METRICS_PORT`         | `9464`                                | Prometheus metrics port                |
+| `API_PORT`             | `9465`                                | HTTP API port                          |
+| `S3_ACCESS_KEY_ID`     | (none)                                | AWS credentials for Hyperliquid bucket |
+| `S3_SECRET_ACCESS_KEY` | (none)                                | AWS credentials for Hyperliquid bucket |
 
 ## Tests
 
