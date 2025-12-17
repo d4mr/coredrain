@@ -125,7 +125,7 @@ HyperEVM doesn't have a "get blocks in time range" API. You can only query by bl
            ▼                  ▼                  ▼
     ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
     │  Worker A   │    │  Worker B   │    │  Worker C   │
-    │  Backfill →  │    │  Polling    │    │  Backfill →  │
+    │  Backfill → │    │  Polling    │    │  Backfill → │
     │  Poll       │    │  (30s)      │    │  Poll       │
     └─────────────┘    └─────────────┘    └─────────────┘
            │                  │                  │
