@@ -65,7 +65,7 @@ It's like building a search index incrementally as queries come in, instead of i
 
 The lazy approach means **new wallets have correlation latency**. When you add a wallet with historical transfers, they don't correlate instantly, the matcher needs to search for each one. This takes time.
 
-I've benchmarked the matcher at sustained ~150 transfers/sec with S3, and it gets faster as the cache grows:
+I've benchmarked the matcher at sustained ~175 matches/sec with S3 (observed max), and it gets faster as the cache grows:
 - **Cache hits**: If a block was fetched for a previous search, we don't fetch it again
 - **Better interpolation**: More cached blocks means tighter bounds for the binary search, fewer rounds needed
 
@@ -88,7 +88,7 @@ The service automatically switches between them:
 
 S3 is 180x faster because we bypass the RPC rate limits and fetch raw block files directly. The data is LZ4-compressed MessagePack, which Bun handles efficiently with native bindings.
 
-> **Note**: Bun's native S3 client (`Bun.s3`) would provide a ~20x improvement in performance (from ~150 blocks/sec to ~3000 blocks/sec based on their 7k files/sec benchmarks). However, `Bun.s3` does not currently support "requester pays" buckets, which Hyperliquid requires. I have submitted a PR to add support: https://github.com/oven-sh/bun/pull/25514
+> **Note**: We use Bun's native S3 client (`Bun.S3Client`) with requester pays support (added in Bun 1.3.6). This provides ~20x better performance compared to manual AWS SignatureV4 signing. The requester pays support was added via this PR: https://github.com/oven-sh/bun/pull/25514
 
 ## The Search Algorithm
 
